@@ -1,0 +1,523 @@
+<title>Approval Sewa Armada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<style>
+/* Layout: operations console — sticky top bar, one working column (max 1180px), detail opens as a side panel */
+:root{
+  --bg:#F3F1EC; --surface:#FFFEFB; --surface-2:#F8F6F1; --ink:#15233A; --muted:#5A6372; --line:#DCD7CD; --line-strong:#C3BDB1;
+  --accent:#B8322A; --accent-ink:#FFF8F4;
+  --sewa:#A82E26; --sewa-bg:#F8E1DC; --ok:#245892; --ok-bg:#E1EAF5; --wait:#7A5200; --wait-bg:#F5E7C4;
+  --font-ui:'IBM Plex Sans',Arial,sans-serif; --font-num:'IBM Plex Mono',Consolas,monospace; --font-title:'Source Serif 4',Georgia,serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151E; --surface:#17202C; --surface-2:#1C2735; --ink:#E7EBF0; --muted:#9BA6B5; --line:#2A3544; --line-strong:#3A4757;
+  --accent:#E8735F; --accent-ink:#1A0E0B;
+  --sewa:#F2907C; --sewa-bg:#3B201C; --ok:#93B8E8; --ok-bg:#1B2B3F; --wait:#E8C36E; --wait-bg:#352A12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151E; --surface:#17202C; --surface-2:#1C2735; --ink:#E7EBF0; --muted:#9BA6B5; --line:#2A3544; --line-strong:#3A4757;
+  --accent:#E8735F; --accent-ink:#1A0E0B;
+  --sewa:#F2907C; --sewa-bg:#3B201C; --ok:#93B8E8; --ok-bg:#1B2B3F; --wait:#E8C36E; --wait-bg:#352A12; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--font-ui);font-size:15px;line-height:1.5}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:30px;height:30px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:12px;letter-spacing:.5px}
+.brand-name{font-family:var(--font-title);font-weight:600;font-size:19px;white-space:nowrap}
+.spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;color:var(--muted);white-space:nowrap}
+.chip b{color:var(--ink);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--ok)} .dot.local{background:var(--wait)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 64px;display:flex;flex-direction:column;gap:20px}
+h1{font-family:var(--font-title);font-weight:600;font-size:28px;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-size:17px;font-weight:600;margin:0}
+h3{font-size:13px;font-weight:600;margin:0;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+p{margin:0}
+.sub{color:var(--muted);max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.go{background:var(--sewa);color:var(--surface);border-color:var(--sewa)}
+.btn.no{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.btn.small{padding:5px 11px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.tile .v{font-family:var(--font-num);font-size:26px;font-weight:600}
+.tile .l{font-size:13px;color:var(--muted)}
+.tile.alert .v{color:var(--sewa)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.pill.sewa{background:var(--sewa-bg);color:var(--sewa)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.wait{background:var(--wait-bg);color:var(--wait)}
+.pill.mute{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.rec{display:flex;flex-direction:column;gap:3px}
+.rec .why{font-size:12.5px;color:var(--muted)}
+.ratio{font-family:var(--font-num);font-size:13px;white-space:nowrap}
+.ratio.over{color:var(--sewa);font-weight:600}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+label.f input,label.f select,.in{border:1px solid var(--line-strong);background:var(--surface);border-radius:7px;padding:8px 10px;color:var(--ink);min-width:0;width:100%}
+.in.tight{padding:5px 8px;width:86px}
+.drop{border:2px dashed var(--line-strong);border-radius:var(--r);padding:28px 20px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;background:var(--surface-2);cursor:pointer}
+.drop.hover{border-color:var(--accent)}
+.notice{border-radius:8px;padding:10px 14px;font-size:14px;background:var(--wait-bg);color:var(--wait)}
+.notice.err{background:var(--sewa-bg);color:var(--sewa)}
+.notice.info{background:var(--ok-bg);color:var(--ok)}
+.syncbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px}
+.syncbar b{color:var(--ink)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.kv .tot{border-top:1px solid var(--line);padding-top:6px;font-weight:600;color:var(--ink)}
+.verdict{border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.verdict.sewa{background:var(--sewa-bg);color:var(--sewa)}
+.verdict.ok{background:var(--ok-bg);color:var(--ok)}
+.verdict.wait{background:var(--wait-bg);color:var(--wait)}
+.verdict .big{font-size:24px;font-weight:700;font-family:var(--font-title)}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px}
+.checks label{display:flex;gap:8px;align-items:center;font-size:14px}
+.login{min-height:calc(100vh - 140px);display:grid;place-items:center;padding-block:24px}
+.login .card{width:min(420px,100%);gap:16px;padding:28px}
+.scrim{position:fixed;inset:0;background:rgba(10,15,22,.45);z-index:40}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(680px,100%);background:var(--bg);z-index:41;overflow-y:auto;border-left:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.panel-head{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:2}
+.panel-body{padding:18px;display:flex;flex-direction:column;gap:16px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.confirm{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--sewa-bg);color:var(--sewa);padding:10px 12px;border-radius:8px}
+@media (max-width:640px){.brand-name{font-size:17px}h1{font-size:23px}}
+@media (prefers-reduced-motion:no-preference){.panel{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+
+<header class="topbar"><div class="topbar-in">
+  <div class="brand"><div class="brand-mark" aria-hidden="true">PMA</div><span class="brand-name">Approval Sewa Armada</span></div>
+  <div class="spacer"></div>
+  <span class="chip" id="storeChip"><span class="dot" id="storeDot"></span><span id="storeLabel">Menghubungkan…</span></span>
+  <span class="chip" id="roleChip" hidden>Masuk sebagai <b id="roleName"></b></span>
+  <button class="btn small" id="logoutBtn" hidden>Keluar</button>
+</div></header>
+
+<main id="app" class="wrap"></main>
+<div id="panelRoot"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+'use strict';
+// Akun prototype: hanya memisahkan tampilan, bukan pengaman (terlihat di source)
+const ACCOUNTS=[{u:'area',p:'pma-area',role:'area'},{u:'manager',p:'pma-manager',role:'manager'}];
+const TYPES={RS:'Retail small',RL:'Retail large',GR:'Grosir'};
+const SOURCE_SHEET='https://docs.google.com/spreadsheets/d/1kxzxy3URR0qc65H0xXi-XBapluEA66ywPtHHadzN4B0/edit';
+const DEFAULT_CFG={ambangDalam:150,ambangLuar:120,jamKerja:10,kecepatan:40,layanan:{RS:6,RL:15,GR:60},tipeDefault:'RS',
+  kmPPDefault:'',kmAntarDefault:'',kubikSewaDefault:2.7,regionLuar:[],abaikanMerged:true,feedId:'1A7r7MXNrofvDGZ23uWFCrROk_GdUhY8ysCchWodB6FA'};
+const DRIVE='Google Drive';
+
+const S={role:null,cfg:clone(DEFAULT_CFG),master:{depos:{}},depoSet:{},cust:{},subs:[],pending:null,tab:'keputusan',areaPlant:'',mgrDate:'',openId:null,notice:'',confirmReplace:null,dbSearch:'',dbRegion:'',mcp:undefined,sync:{state:'idle'},busy:{}};
+
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmt(n,d){d=d==null?2:d;return n==null||!isFinite(n)?'—':Number(n).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pct(n){return n==null||!isFinite(n)?'—':Math.round(n*100)+'%'}
+function rp(n){return n==null||!isFinite(n)?'—':'Rp '+Math.round(n).toLocaleString('id-ID')}
+function fdate(s){if(!s)return '—';const d=new Date(s+'T00:00:00');return isNaN(d)?s:d.toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}
+function ftime(iso){if(!iso)return '—';const d=new Date(iso);return isNaN(d)?'—':d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+function $(id){return document.getElementById(id)}
+function blank(v){return v===''||v==null}
+
+// ---------- Penyimpanan bersama (db), fallback lokal ----------
+const LS='pma-sewa-armada-v2';
+const Store={mode:'connecting',db:null,local:null,listeners:{},
+  async init(){let db=null;try{if(window.claude&&typeof window.claude.use==='function')db=await window.claude.use('db')}catch(e){}
+    if(db){this.db=db;this.mode='db'}else{this.mode='local';this.local=readLocal()}},
+  watch(col,cb){
+    if(this.mode==='db')return this.db.collection(col).onSnapshot(s=>cb(s.docs.filter(d=>d.exists).map(d=>Object.assign({id:d.id},d.data()))),e=>{S.notice='Data tidak dapat dimuat ('+e.code+'). Muat ulang halaman.';render()});
+    (this.listeners[col]=this.listeners[col]||[]).push(cb);cb(this.list(col));
+  },
+  list(col){const o=this.local[col]||{};return Object.keys(o).map(k=>Object.assign({id:k},o[k]))},
+  notify(col){(this.listeners[col]||[]).forEach(cb=>cb(this.list(col)))},
+  async set(col,id,data){if(this.mode==='db')return this.db.doc(col+'/'+id).set(data);(this.local[col]=this.local[col]||{})[id]=clone(data);writeLocal(this.local);this.notify(col)},
+  async update(col,id,patch){if(this.mode==='db')return this.db.doc(col+'/'+id).update(patch);const c=(this.local[col]=this.local[col]||{});c[id]=Object.assign({},c[id]||{},clone(patch));writeLocal(this.local);this.notify(col)},
+  async del(col,id){if(this.mode==='db')return this.db.doc(col+'/'+id).delete();if(this.local[col])delete this.local[col][id];writeLocal(this.local);this.notify(col)}
+};
+function readLocal(){try{const v=JSON.parse(localStorage.getItem(LS)||'null');if(v&&typeof v==='object')return v}catch(e){}return{}}
+function writeLocal(v){try{localStorage.setItem(LS,JSON.stringify(v))}catch(e){}}
+async function save(fn,okMsg){try{await fn();if(okMsg)toast(okMsg)}catch(e){const c=e&&e.code;S.notice=c==='quota_exceeded'?'Penyimpanan penuh. Hapus upload lama lalu coba lagi.':'Gagal menyimpan'+(c?' ('+c+')':'')+'. Coba lagi.';render()}}
+let toastTimer=null;
+function toast(msg){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');t.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:60;font-size:14px;max-width:calc(100% - 32px)';document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2600)}
+
+// ---------- Database armada dari Google Sheet ----------
+function parseCSV(t){const rows=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f);f=''}else if(c==='\n'){row.push(f);rows.push(row);row=[];f=''}else if(c!=='\r')f+=c}if(f!==''||row.length){row.push(f);rows.push(row)}return rows}
+function num(v){if(v==null||v==='')return 0;if(typeof v==='number')return v;let s=String(v).trim();if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isFinite(n)?n:0}
+function buildMaster(rows){
+  const norm=v=>String(v==null?'':v).replace(/\uFEFF/g,'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim().toUpperCase();
+  const header=rows.findIndex(r=>r.some(v=>norm(v)==='PLANT ID')&&r.some(v=>norm(v)==='KUBIKASI'));
+  if(header<0)throw Object.assign(new Error('Kolom PLANT ID dan KUBIKASI tidak ditemukan pada tab sumber.'),{code:'format'});
+  rows=rows.slice(header);
+  const h=rows[0]||[];const segs=[];let cur=null;
+  h.forEach((name,i)=>{name=norm(name);if(!name)return;if(!cur||(name==='REGION'&&'PLANT ID' in cur.cols)||(name==='PLANT ID'&&'PLANT ID' in cur.cols)||(name==='KODE DP'&&'PLANT ID' in cur.cols)){cur={cols:{}};segs.push(cur)}if(!(name in cur.cols))cur.cols[name]=i});
+  const depos={};let nKend=0;
+  segs.filter(s=>'PLANT ID' in s.cols).forEach(s=>{
+    const c=s.cols,isMT='STATUS MERGER' in c,src=isMT?'MT':'GT';
+    rows.slice(1).forEach(r=>{
+      const plant=String(r[c['PLANT ID']]||'').trim().toUpperCase();if(!/^P\d+$/.test(plant))return;
+      const tipe=String(r[c['TIPE KENDARAAN']]||r[c['KATEGORI KENDARAAN']]||'LAINNYA').trim().toUpperCase();
+      const kub=num(r[c['KUBIKASI']]);const merged=isMT&&/MERGED/i.test(String(r[c['STATUS MERGER']]||''));
+      const d=depos[plant]=depos[plant]||{nama:String(r[c['NAMA DEPO']]||'').trim().toUpperCase(),region:String(r[c['REGION']]||'').trim(),site:String(r[c['SITE CODE']]||'').trim(),src:String(r[c['SUMBER DATA']]||src).trim().toUpperCase(),armada:[]};
+      let a=d.armada.find(x=>x.tipe===tipe&&!!x.merged===merged);if(!a){a={tipe,unit:0,kubik:0,merged};d.armada.push(a)}
+      a.unit++;a.kubik=+(a.kubik+kub).toFixed(3);nKend++;
+    });
+  });
+  const ds=segs.find(s=>'KODE DP' in s.cols);
+  if(ds){const c=ds.cols;rows.slice(1).forEach(r=>{
+    const plant=String(r[c['PLANT LDC']]||'').trim().toUpperCase();if(!plant||!/^P\d+/.test(plant))return;
+    const nama=String(r[c['NAMA DP']]||'').trim().toUpperCase(),reg=String(r[c['REGION']]||'').trim(),lp=String(r[c['DP/LP']]||'').trim().toUpperCase();
+    const d=depos[plant];
+    if(!d){depos[plant]={nama,region:reg,site:String(r[c['KODE DP']]||'').trim(),src:String(r[c['GT/MT']]||'').trim(),armada:[],dpName:nama,_lp:lp==='LP'};return}
+    if(!d.dpName||(!d._lp&&lp==='LP')){d.dpName=nama;d._lp=lp==='LP';if(!d.site)d.site=String(r[c['KODE DP']]||'').trim()}
+  })}
+  Object.keys(depos).forEach(p=>{const d=depos[p];if(d.dpName)d.nama=d.dpName;delete d.dpName;delete d._lp;d.armada.sort((a,b)=>b.unit-a.unit)});
+  return{depos,nKend};
+}
+function hashStr(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36)+'-'+s.length}
+function b64utf8(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder('utf-8').decode(u)}
+const SYNC_MSG={server_not_connected:'Google Drive belum terhubung di akun Claude Anda. Tambahkan di Settings → Connectors, lalu klik Tarik ulang.',needs_reauth:'Koneksi Google Drive kedaluwarsa. Hubungkan ulang di Settings → Connectors, lalu klik Tarik ulang.',not_in_manifest:'Akses Google Drive untuk halaman ini tidak diizinkan. Izinkan saat diminta, lalu klik Tarik ulang.',selection_required:'Ada lebih dari satu koneksi Google Drive. Pilih salah satu saat diminta, lalu klik Tarik ulang.',blocked_by_policy:'Kebijakan organisasi memblokir akses Google Drive dari halaman ini.',server_unavailable:'Google Drive sedang tidak merespons. Coba Tarik ulang sebentar lagi.',tool_error:'Sheet feed tidak bisa dibaca. Pastikan akun Google Anda punya akses ke sheet "Feed Armada - Web Approval Sewa".',format:'Isi sheet feed tidak dikenali. Pastikan tab pertama berisi kolom PLANT ID dan KUBIKASI.',empty:'Sheet feed kosong. Periksa rumus IMPORTRANGE di sheet feed.'};
+async function syncSheet(){
+  if(!S.mcp){S.sync={state:'off'};render();return}
+  S.sync={state:'loading'};render();
+  try{
+    const res=await S.mcp.callTool(DRIVE,'download_file_content',{fileId:S.cfg.feedId,exportMimeType:'text/csv'},{cache:false});
+    const p=res&&res.payload;const b64=p&&typeof p==='object'?p.content:null;
+    if(typeof b64!=='string')throw{code:'format'};
+    const m=buildMaster(parseCSV(b64utf8(b64)));
+    if(!Object.keys(m.depos).length)throw{code:'empty'};
+    const sig=hashStr(JSON.stringify(m.depos));const now=new Date().toISOString();
+    if(sig!==S.master.sig){await Store.set('master','armada',{depos:m.depos,sig,syncedAt:now,nKendaraan:m.nKend,nDepo:Object.keys(m.depos).length,feedId:S.cfg.feedId})}
+    S.sync={state:'ok',at:now,changed:sig!==S.master.sig};
+  }catch(e){S.sync={state:'error',code:e&&e.code,msg:(e&&SYNC_MSG[e.code])||('Gagal menarik data armada'+(e&&e.code?' ('+e.code+')':'')+'. Coba Tarik ulang.')}}
+  render();
+}
+
+// ---------- Perhitungan ----------
+function depoInfo(plant){
+  const m=(S.master.depos||{})[plant];if(!m)return null;const set=S.depoSet[plant]||{},cfg=S.cfg;
+  const arm=(m.armada||[]).filter(a=>!(cfg.abaikanMerged&&a.merged));
+  const N=arm.reduce((s,a)=>s+a.unit,0),K=arm.reduce((s,a)=>s+a.kubik,0);
+  const pulau=set.pulau||((cfg.regionLuar||[]).indexOf(m.region)>=0?'luar':'dalam');
+  const kmPP=!blank(set.kmPP)?+set.kmPP:(!blank(cfg.kmPPDefault)?+cfg.kmPPDefault:null);
+  const kmAntar=!blank(set.kmAntar)?+set.kmAntar:(!blank(cfg.kmAntarDefault)?+cfg.kmAntarDefault:null);
+  const kubSewa=+set.kubikSewa||+cfg.kubikSewaDefault||2.7;
+  return{plant,nama:m.nama,region:m.region,site:m.site,armada:arm,N,K,pulau,pulauSendiri:!!set.pulau,kmPP,kmAntar,kubSewa};
+}
+function evaluate(sub){
+  const cfg=S.cfg,info=depoInfo(sub.plant),cmap=(S.cust[sub.plant]&&S.cust[sub.plant].map)||{};
+  const r={D:sub.D,nToko:(sub.customers||[]).length,issues:[],types:{RS:0,RL:0,GR:0},info};
+  (sub.customers||[]).forEach(c=>{const t=cmap[c.id]||cfg.tipeDefault||'RS';r.types[t]=(r.types[t]||0)+1});
+  if(!info){r.issues.push('PLANT '+sub.plant+' tidak ada di Database Armada');r.rek='DATA';return r}
+  Object.assign(r,{nama:info.nama,pulau:info.pulau,N:info.N,K:info.K,amb:(info.pulau==='luar'?cfg.ambangLuar:cfg.ambangDalam)/100,kubSewa:info.kubSewa});
+  if(!r.K){r.issues.push('Depo belum punya armada di Database Armada');r.rek='DATA';return r}
+  r.rasioK=r.D/r.K;r.capEff=r.K*r.amb;r.gapK=r.D-r.capEff;r.unitK=r.gapK>0?Math.ceil(r.gapK/r.kubSewa-1e-9):0;r.unitT=0;
+  if(info.kmPP==null||info.kmAntar==null){r.timeMissing=true}
+  else{
+    r.svcMin=Object.keys(r.types).reduce((s,t)=>s+r.types[t]*(+cfg.layanan[t]||0),0);
+    r.kmToko=info.kmAntar*r.nToko;r.jamJalan=r.kmToko/cfg.kecepatan;r.jamPP=info.kmPP/cfg.kecepatan;
+    r.jamToko=r.svcMin/60+r.jamJalan;r.jamEfektif=cfg.jamKerja-r.jamPP;
+    if(r.jamEfektif<=0){r.timeMissing=true;r.issues.push('Waktu pulang-pergi depo melebihi jam kerja')}
+    else{r.jamTersedia=r.N*r.jamEfektif;r.rasioT=r.jamToko/r.jamTersedia;r.unitButuhT=Math.ceil(r.jamToko/r.jamEfektif-1e-9);r.unitT=Math.max(0,r.unitButuhT-r.N)}
+  }
+  r.unit=Math.max(r.unitK,r.unitT);r.rek=r.unit>0?'SEWA':'TIDAK';
+  r.alasan=[];if(r.unitK>0)r.alasan.push('kubikasi '+pct(r.rasioK)+' > '+pct(r.amb));if(r.unitT>0)r.alasan.push('jam kerja '+pct(r.rasioT));
+  return r;
+}
+
+// ---------- Baca file DO Zyllem ----------
+function findCol(h,names){const low=h.map(x=>String(x).trim().toLowerCase());for(const n of names){const i=low.indexOf(n.toLowerCase());if(i>=0)return h[i]}return null}
+function toISO(v){
+  if(v instanceof Date&&!isNaN(v)){const d=new Date(v.getTime()+12*3600*1000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  if(typeof v==='number'&&window.XLSX){const o=XLSX.SSF.parse_date_code(v);if(o)return o.y+'-'+String(o.m).padStart(2,'0')+'-'+String(o.d).padStart(2,'0')}
+  if(typeof v==='string'){let m=v.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];m=v.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')}
+  return null;
+}
+function parseFile(buf,fileName){
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});if(!rows.length)throw new Error('File tidak berisi baris data.');
+  const h=Object.keys(rows[0]);
+  const c={cap:findCol(h,['Line Item Capacity Usage 1']),cust:findCol(h,['SOLDTOCUSTOMERID',"Consignee's Contact Id"]),dno:findCol(h,['DELIVERYORDERID']),plant:findCol(h,['PLANT',"Shipper's Contact Id"]),route:findCol(h,['Route']),date:findCol(h,['Pickup Time']),val:findCol(h,['NETVALUE','NET_VALUE'])};
+  if(!c.cap)throw new Error('Kolom "Line Item Capacity Usage 1" tidak ditemukan. Pastikan ini file export DO Zyllem.');
+  if(!c.cust)throw new Error('Kolom customer (SOLDTOCUSTOMERID) tidak ditemukan.');
+  if(!c.plant)throw new Error('Kolom PLANT tidak ditemukan, depo tidak bisa dikenali.');
+  const by={};
+  rows.forEach(r=>{
+    const plant=String(r[c.plant]||'').trim().toUpperCase();if(!plant)return;
+    const g=by[plant]=by[plant]||{plant,rows:0,D:0,nilai:0,dos:new Set(),dates:{},cust:{},routes:{}};
+    const cap=num(r[c.cap]),val=c.val?num(r[c.val]):0,cid=String(r[c.cust]||'').trim()||'(tanpa id)',rt=c.route?String(r[c.route]||'-'):'-',dno=c.dno?String(r[c.dno]):'';
+    g.rows++;g.D+=cap;g.nilai+=val;if(dno)g.dos.add(dno);
+    const dt=c.date?toISO(r[c.date]):null;if(dt)g.dates[dt]=(g.dates[dt]||0)+1;
+    const cu=g.cust[cid]=g.cust[cid]||{id:cid,cub:0,nilai:0,dos:new Set(),route:rt};cu.cub+=cap;cu.nilai+=val;if(dno)cu.dos.add(dno);
+    const ro=g.routes[rt]=g.routes[rt]||{route:rt,D:0,cust:new Set(),dos:new Set()};ro.D+=cap;ro.cust.add(cid);if(dno)ro.dos.add(dno);
+  });
+  const out=Object.values(by).map(g=>{const ds=Object.keys(g.dates).sort((a,b)=>g.dates[b]-g.dates[a]);
+    return{plant:g.plant,tanggal:ds[0]||'',fileName,nBaris:g.rows,D:+g.D.toFixed(5),nilai:Math.round(g.nilai),nDO:g.dos.size,
+      customers:Object.values(g.cust).map(x=>({id:x.id,cub:+x.cub.toFixed(5),nilai:Math.round(x.nilai),nDO:x.dos.size,route:x.route})).sort((a,b)=>b.cub-a.cub),
+      routes:Object.values(g.routes).map(x=>({route:x.route,D:+x.D.toFixed(5),nToko:x.cust.size,nDO:x.dos.size})).sort((a,b)=>b.D-a.D)}});
+  if(!out.length)throw new Error('Tidak ada baris dengan kode PLANT.');return out;
+}
+function subId(plant,date){return (plant+'_'+String(date||'tanpa-tanggal').replace(/-/g,'')).replace(/[^A-Za-z0-9_.~:@+-]/g,'-')}
+function depoName(plant){const m=(S.master.depos||{})[plant];return m&&m.nama?m.nama:''}
+
+// ---------- Komponen ----------
+function pillStatus(s){
+  if(s.status==='sewa')return '<span class="pill sewa">Approved sewa · '+esc(s.keputusan&&s.keputusan.unit)+' unit</span>';
+  if(s.status==='tidak')return '<span class="pill ok">Tidak sewa</span>';
+  return '<span class="pill wait">Menunggu manager</span>';
+}
+function pillRek(r){if(r.rek==='SEWA')return '<span class="pill sewa">Sewa '+r.unit+' unit</span>';if(r.rek==='TIDAK')return '<span class="pill ok">Tidak perlu sewa</span>';return '<span class="pill mute">Data belum lengkap</span>'}
+function noticeHtml(){return S.notice?'<div class="notice err" role="alert">'+esc(S.notice)+'</div>':''}
+function syncBar(){
+  const m=S.master,s=S.sync;let st='';
+  if(s.state==='loading')st='Menarik data dari Google Sheet…';
+  else if(s.state==='ok')st='Tersinkron dengan sheet '+ftime(s.at)+(s.changed?' · ada perubahan, data diperbarui':' · tidak ada perubahan');
+  else if(s.state==='off')st='Koneksi Google Drive tidak tersedia di tampilan ini; memakai sinkron terakhir.';
+  let h='<div class="syncbar" role="status"><span>Database armada: <b>'+(m.nDepo||0)+' depo · '+(m.nKendaraan||0)+' unit</b>, sinkron terakhir '+ftime(m.syncedAt)+'</span>'+(st?'<span>· '+esc(st)+'</span>':'')+
+    '<span class="spacer"></span><button class="btn small" data-act="sync"'+(s.state==='loading'||!S.mcp?' disabled':'')+'>Tarik ulang dari sheet</button></div>';
+  if(s.state==='error')h+='<div class="notice">'+esc(s.msg)+' Sementara memakai sinkron terakhir.</div>';
+  return h;
+}
+
+// ---------- Login ----------
+function viewLogin(){
+  return '<div class="login"><form class="card" id="loginForm" autocomplete="on"><div style="display:flex;flex-direction:column;gap:6px"><h1>Masuk</h1><p class="sub">Area mengirim file DO harian. Manager menyetujui atau menolak sewa armada.</p></div>'+
+  '<label class="f">Username<input id="lgUser" name="username" autocomplete="username" required></label><label class="f">Password<input id="lgPass" name="password" type="password" autocomplete="current-password" required></label>'+
+  '<p id="lgErr" class="notice err" hidden>Username atau password salah.</p><button class="btn primary" type="submit">Masuk</button></form></div>';
+}
+
+// ---------- Area ----------
+function viewArea(){
+  const p=S.pending;
+  let h='<div style="display:flex;flex-direction:column;gap:6px"><h1>Upload DO harian</h1><p class="sub">Unggah export DO Zyllem. Depo dan tanggal kirim terbaca dari kolom PLANT dan Pickup Time; total kubikasi dari kolom Line Item Capacity Usage 1.</p></div>'+noticeHtml();
+  if(!p)h+='<label class="drop" id="drop" for="fileIn"><b>Pilih file .xlsx atau tarik ke sini</b><span class="muted small">Contoh: DO_Zyllem_2026-10-06.xlsx</span><input type="file" id="fileIn" accept=".xlsx,.xls,.csv" hidden></label>';
+  else{
+    h+=p.groups.map((g,gi)=>pendingCard(g,gi)).join('');
+    h+='<div class="row"><button class="btn primary" data-act="submitPending">Kirim ke manager</button><button class="btn" data-act="cancelPending">Batal</button></div>';
+    if(S.confirmReplace)h+='<div class="confirm" role="alert"><span>Upload '+esc(S.confirmReplace)+' sudah diputuskan manager. Kirim ulang akan membatalkan keputusan itu.</span><button class="btn small" data-act="submitPending" data-force="1">Kirim ulang</button><button class="btn small" data-act="cancelReplace">Jangan</button></div>';
+  }
+  const plants=[...new Set(S.subs.map(s=>s.plant))].sort();
+  const list=S.subs.filter(s=>!S.areaPlant||s.plant===S.areaPlant).sort((a,b)=>(b.tanggal||'').localeCompare(a.tanggal||'')||(b.uploadedAt||'').localeCompare(a.uploadedAt||''));
+  h+='<section class="card"><div class="row"><h2>Status pengajuan</h2><div class="spacer"></div><label class="f" style="flex-direction:row;align-items:center;gap:8px">Depo<select id="areaPlant" class="in" style="width:auto"><option value="">Semua</option>'+plants.map(x=>'<option value="'+esc(x)+'"'+(x===S.areaPlant?' selected':'')+'>'+esc(x+' '+depoName(x))+'</option>').join('')+'</select></label></div>';
+  if(!list.length)h+='<p class="empty">Belum ada upload. File yang Anda kirim akan muncul di sini beserta keputusan manager.</p>';
+  else h+='<div class="tablewrap"><table><thead><tr><th>Tanggal kirim</th><th>Depo</th><th class="r">Kubikasi</th><th class="r">DO</th><th class="r">Toko</th><th>Status</th></tr></thead><tbody>'+
+    list.map(s=>'<tr><td>'+fdate(s.tanggal)+'</td><td><b>'+esc(s.plant)+'</b> '+esc(depoName(s.plant))+'</td><td class="r num">'+fmt(s.D)+' m³</td><td class="r num">'+s.nDO+'</td><td class="r num">'+(s.customers||[]).length+'</td><td>'+pillStatus(s)+'</td></tr>').join('')+'</tbody></table></div>';
+  return h+'</section>';
+}
+function pendingCard(g,gi){
+  const nama=depoName(g.plant),cmap=(S.cust[g.plant]&&S.cust[g.plant].map)||{},prev=S.subs.find(s=>s.id===subId(g.plant,g.tanggal));
+  let h='<section class="card"><div class="row"><div><h2>'+esc(g.plant)+(nama?' · '+esc(nama):'')+'</h2><p class="muted small">'+esc(g.fileName)+' · '+g.nBaris+' baris</p></div><div class="spacer"></div><label class="f">Tanggal kirim<input type="date" class="in" id="pdate-'+gi+'" data-gi="'+gi+'" value="'+esc(g.tanggal)+'"></label></div>';
+  if(!nama)h+='<p class="notice">PLANT '+esc(g.plant)+' tidak ditemukan di Database Armada. File tetap bisa dikirim, tetapi manager belum bisa melihat rekomendasi sampai depo ada di sheet.</p>';
+  if(prev)h+='<p class="notice info">Sudah ada upload untuk tanggal ini ('+ftime(prev.uploadedAt)+'). Kiriman ini akan menggantikannya.</p>';
+  h+='<div class="tiles"><div class="tile"><span class="v">'+fmt(g.D)+'</span><span class="l">Total kubikasi (m³)</span></div><div class="tile"><span class="v">'+g.nDO+'</span><span class="l">Delivery order</span></div><div class="tile"><span class="v">'+g.customers.length+'</span><span class="l">Toko</span></div><div class="tile"><span class="v" style="font-size:20px">'+rp(g.nilai)+'</span><span class="l">Nilai DO</span></div></div>';
+  h+='<div style="display:flex;flex-direction:column;gap:6px"><h3>Tipe toko</h3><p class="muted small">Menentukan waktu layanan: retail small '+S.cfg.layanan.RS+' menit, retail large '+S.cfg.layanan.RL+' menit, grosir '+S.cfg.layanan.GR+' menit. Pilihan disimpan untuk upload berikutnya.</p></div>';
+  h+='<div class="tablewrap"><table><thead><tr><th>Customer</th><th>Route</th><th class="r">Kubikasi</th><th class="r">Nilai</th><th>Tipe</th></tr></thead><tbody>'+
+    g.customers.map((c,ci)=>{const t=(g.types&&g.types[c.id])||cmap[c.id]||S.cfg.tipeDefault;return '<tr><td class="num">'+esc(c.id)+'</td><td>'+esc(c.route)+'</td><td class="r num">'+fmt(c.cub,3)+'</td><td class="r num">'+rp(c.nilai)+'</td><td><select class="in" style="width:auto" data-gi="'+gi+'" data-cid="'+esc(c.id)+'" id="t-'+gi+'-'+ci+'">'+Object.keys(TYPES).map(k=>'<option value="'+k+'"'+(k===t?' selected':'')+'>'+TYPES[k]+'</option>').join('')+'</select></td></tr>'}).join('')+'</tbody></table></div></section>';
+  return h;
+}
+
+// ---------- Manager ----------
+function viewManager(){
+  let h='<div class="tabs" role="tablist">'+[['keputusan','Approval'],['armada','Database armada'],['param','Parameter']].map(t=>'<button class="tab" role="tab" aria-selected="'+(S.tab===t[0])+'" data-act="tab" data-tab="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'+noticeHtml();
+  if(S.tab==='keputusan')h+=viewApproval();else if(S.tab==='armada')h+=viewArmada();else h+=viewParams();
+  return h;
+}
+function viewApproval(){
+  const dates=[...new Set(S.subs.map(s=>s.tanggal).filter(Boolean))].sort().reverse();
+  if(S.mgrDate===''&&dates.length)S.mgrDate=dates[0];
+  const list=S.subs.filter(s=>S.mgrDate==='semua'||s.tanggal===S.mgrDate).map(s=>({s,r:evaluate(s)}));
+  list.sort((a,b)=>((a.s.status==='menunggu'?0:1)-(b.s.status==='menunggu'?0:1))||((b.r.unit||0)-(a.r.unit||0))||a.s.plant.localeCompare(b.s.plant));
+  const wait=list.filter(x=>x.s.status==='menunggu'),bulk=wait.filter(x=>x.r.rek!=='DATA'),nRek=list.filter(x=>x.r.rek==='SEWA').length,uRek=list.reduce((t,x)=>t+(x.r.rek==='SEWA'?x.r.unit:0),0);
+  let h='<div class="row" style="align-items:flex-end"><div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:240px"><h1>Approval sewa armada</h1><p class="sub">Sistem sudah menghitung rekomendasinya. Tombol yang sesuai rekomendasi ditandai; cukup klik Approve sewa atau Tidak sewa.</p></div>'+
+    '<label class="f">Tanggal kirim<select id="mgrDate" class="in">'+dates.map(d=>'<option value="'+d+'"'+(d===S.mgrDate?' selected':'')+'>'+fdate(d)+'</option>').join('')+'<option value="semua"'+(S.mgrDate==='semua'?' selected':'')+'>Semua tanggal</option></select></label></div>';
+  h+=syncBar();
+  h+='<div class="tiles"><div class="tile"><span class="v">'+list.length+'</span><span class="l">Depo sudah upload</span></div><div class="tile'+(nRek?' alert':'')+'"><span class="v">'+nRek+'</span><span class="l">Rekomendasi sewa · '+uRek+' unit</span></div><div class="tile"><span class="v">'+wait.length+'</span><span class="l">Menunggu keputusan</span></div></div>';
+  if(!list.length)return h+'<div class="card"><p class="empty">Belum ada upload untuk tanggal ini. Pengajuan muncul setelah area mengirim file DO.</p></div>';
+  if(bulk.length)h+='<div class="row"><button class="btn primary" data-act="bulk">Ikuti semua rekomendasi ('+bulk.length+' depo)</button></div>';
+  h+='<div class="tablewrap"><table><thead><tr><th>Depo</th><th>Tanggal</th><th class="r">DO ÷ armada</th><th class="r">Jam kerja</th><th>Rekomendasi</th><th>Keputusan</th></tr></thead><tbody>'+
+    list.map(({s,r})=>{
+      const goPrimary=r.rek==='SEWA',noPrimary=r.rek==='TIDAK';
+      const act=s.status==='menunggu'?'<div class="acts"><button class="btn small '+(goPrimary?'go':'')+'" data-act="decide" data-id="'+esc(s.id)+'" data-v="sewa">Approve sewa'+(r.unit?' '+r.unit+' unit':'')+'</button><button class="btn small '+(noPrimary?'no':'')+'" data-act="decide" data-id="'+esc(s.id)+'" data-v="tidak">Tidak sewa</button></div>'
+        :'<div class="rec">'+pillStatus(s)+'<span class="why">'+ftime(s.keputusan&&s.keputusan.at)+' · <button class="link" data-act="undo" data-id="'+esc(s.id)+'">Ubah</button></span></div>';
+      return '<tr><td><b>'+esc(s.plant)+'</b> '+esc(r.nama||'')+'<div class="muted small">'+esc(r.info?r.info.region:'')+(r.pulau?' · '+(r.pulau==='luar'?'luar':'dalam')+' pulau':'')+'</div></td><td class="small">'+fdate(s.tanggal)+'</td>'+
+        '<td class="r"><span class="num">'+fmt(r.D)+' / '+(r.K?fmt(r.K):'—')+' m³</span><div class="ratio'+(r.unitK>0?' over':'')+'">'+pct(r.rasioK)+(r.amb?' (batas '+pct(r.amb)+')':'')+'</div></td>'+
+        '<td class="r">'+(r.timeMissing?'<span class="muted small">jarak belum diisi</span>':'<span class="ratio'+(r.unitT>0?' over':'')+'">'+pct(r.rasioT)+'</span>')+'</td>'+
+        '<td><div class="rec">'+pillRek(r)+'<span class="why">'+esc((r.alasan&&r.alasan.length?r.alasan.join(', '):r.issues.join('; '))||'')+'</span><span class="why"><button class="link" data-act="open" data-id="'+esc(s.id)+'">Lihat hitungan</button></span></div></td><td>'+act+'</td></tr>'}).join('')+'</tbody></table></div>';
+  return h;
+}
+function viewArmada(){
+  const all=Object.keys(S.master.depos||{}).sort();const regions=[...new Set(all.map(p=>S.master.depos[p].region).filter(Boolean))].sort();
+  const q=S.dbSearch.trim().toUpperCase();
+  const list=all.filter(p=>{const d=S.master.depos[p];return(!S.dbRegion||d.region===S.dbRegion)&&(!q||p.indexOf(q)>=0||String(d.nama).indexOf(q)>=0)});
+  let h='<div style="display:flex;flex-direction:column;gap:6px"><h1>Database armada</h1><p class="sub">Kode depo, nama depo, dan armada ditarik langsung dari <a href="'+SOURCE_SHEET+'" target="_blank" rel="noopener">Database Armada PMA &amp; RDI</a> (tab ARMADA GT, ARMADA MT, KD DEPO &amp; DIST) lewat sheet feed. Perubahan di sheet ikut terbawa saat manager membuka halaman atau klik Tarik ulang. Kolom pulau dan jarak di bawah adalah pengaturan web, bisa diubah.</p></div>'+syncBar();
+  h+='<div class="row"><label class="f" style="flex:1;min-width:200px">Cari kode / nama depo<input id="dbSearch" class="in" value="'+esc(S.dbSearch)+'" placeholder="mis. P301 atau AMBON"></label><label class="f">Region<select id="dbRegion" class="in"><option value="">Semua region</option>'+regions.map(r=>'<option'+(r===S.dbRegion?' selected':'')+'>'+esc(r)+'</option>').join('')+'</select></label></div>';
+  h+='<div class="tablewrap"><table><thead><tr><th>Kode</th><th>Nama depo</th><th>Armada</th><th class="r">Unit</th><th class="r">Kubikasi</th><th>Pulau</th><th>PP depo (km)</th><th>Antar toko (km)</th><th>Unit sewa (m³)</th></tr></thead><tbody>'+
+    (list.length?list.slice(0,400).map(p=>{const i=depoInfo(p),set=S.depoSet[p]||{};const mergedN=(S.master.depos[p].armada||[]).filter(a=>a.merged).reduce((s,a)=>s+a.unit,0);
+      return '<tr><td><b>'+esc(p)+'</b></td><td>'+esc(i.nama)+'<div class="muted small">'+esc(i.region)+'</div></td><td class="small">'+(i.armada.map(a=>esc(a.unit+'× '+a.tipe)).join('<br>')||'<span class="muted">—</span>')+(mergedN&&S.cfg.abaikanMerged?'<div class="muted small">'+mergedN+' unit MT merged diabaikan</div>':'')+'</td><td class="r num">'+i.N+'</td><td class="r num">'+fmt(i.K)+'</td>'+
+      '<td><select class="in tight" style="width:120px" data-set="'+esc(p)+'" data-k="pulau" id="ps-'+esc(p)+'"><option value=""'+(!set.pulau?' selected':'')+'>Ikut region ('+((S.cfg.regionLuar||[]).indexOf(i.region)>=0?'luar':'dalam')+')</option><option value="dalam"'+(set.pulau==='dalam'?' selected':'')+'>Dalam</option><option value="luar"'+(set.pulau==='luar'?' selected':'')+'>Luar</option></select></td>'+
+      '<td><input class="in tight" type="number" min="0" step="1" data-set="'+esc(p)+'" data-k="kmPP" id="pp-'+esc(p)+'" value="'+esc(blank(set.kmPP)?'':set.kmPP)+'" placeholder="'+esc(blank(S.cfg.kmPPDefault)?'—':S.cfg.kmPPDefault)+'"></td>'+
+      '<td><input class="in tight" type="number" min="0" step="0.1" data-set="'+esc(p)+'" data-k="kmAntar" id="at-'+esc(p)+'" value="'+esc(blank(set.kmAntar)?'':set.kmAntar)+'" placeholder="'+esc(blank(S.cfg.kmAntarDefault)?'—':S.cfg.kmAntarDefault)+'"></td>'+
+      '<td><input class="in tight" type="number" min="0" step="0.1" data-set="'+esc(p)+'" data-k="kubikSewa" id="ks-'+esc(p)+'" value="'+esc(blank(set.kubikSewa)?'':set.kubikSewa)+'" placeholder="'+esc(S.cfg.kubikSewaDefault)+'"></td></tr>'}).join('')
+    :'<tr><td colspan="9" class="empty">'+(all.length?'Tidak ada depo yang cocok.':'Database armada belum tersinkron. Klik Tarik ulang dari sheet.')+'</td></tr>')+'</tbody></table></div>';
+  return h;
+}
+function viewParams(){
+  const c=S.cfg,regions=[...new Set(Object.values(S.master.depos||{}).map(d=>d.region).filter(Boolean))].sort();
+  return '<div style="display:flex;flex-direction:column;gap:6px"><h1>Parameter</h1><p class="sub">Semua angka bisa diubah. Rekomendasi untuk pengajuan yang belum diputuskan langsung ikut berubah.</p></div>'+
+  '<section class="card"><h2>Ambang kubikasi</h2><div class="grid2"><label class="f">Dalam pulau: sewa bila DO ÷ armada di atas (%)<input id="pDalam" type="number" min="50" step="5" value="'+c.ambangDalam+'"></label><label class="f">Luar pulau: sewa bila DO ÷ armada di atas (%)<input id="pLuar" type="number" min="50" step="5" value="'+c.ambangLuar+'"></label><label class="f">Kubikasi 1 unit sewa, default (m³)<input id="pSewa" type="number" min="0.5" step="0.1" value="'+c.kubikSewaDefault+'"></label></div>'+
+  '<label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="pMerged"'+(c.abaikanMerged?' checked':'')+'> Abaikan unit di tab ARMADA MT berstatus MERGED_TO_GT (agar tidak terhitung dua kali)</label></section>'+
+  '<section class="card"><h2>Region luar pulau</h2><p class="muted small">Centang region yang memakai ambang luar pulau. Depo tertentu bisa diatur sendiri di tab Database armada.</p><div class="checks">'+
+    (regions.length?regions.map((r,i)=>'<label><input type="checkbox" id="rg-'+i+'" data-region="'+esc(r)+'"'+((c.regionLuar||[]).indexOf(r)>=0?' checked':'')+'> '+esc(r)+'</label>').join(''):'<span class="muted small">Region muncul setelah database armada tersinkron.</span>')+'</div></section>'+
+  '<section class="card"><h2>Waktu kerja armada</h2><div class="grid2"><label class="f">Jam kerja per unit per hari<input id="pJam" type="number" min="1" step="0.5" value="'+c.jamKerja+'"></label><label class="f">Kecepatan rata-rata (km/jam)<input id="pSpeed" type="number" min="5" step="1" value="'+c.kecepatan+'"></label>'+
+  '<label class="f">Retail small (menit/toko)<input id="pRS" type="number" min="0" step="1" value="'+c.layanan.RS+'"></label><label class="f">Retail large (menit/toko)<input id="pRL" type="number" min="0" step="1" value="'+c.layanan.RL+'"></label><label class="f">Grosir (menit/toko)<input id="pGR" type="number" min="0" step="1" value="'+c.layanan.GR+'"></label>'+
+  '<label class="f">Tipe default toko baru<select id="pDef">'+Object.keys(TYPES).map(k=>'<option value="'+k+'"'+(k===c.tipeDefault?' selected':'')+'>'+TYPES[k]+'</option>').join('')+'</select></label>'+
+  '<label class="f">Jarak PP depo default (km)<input id="pPP" type="number" min="0" step="1" value="'+esc(c.kmPPDefault)+'" placeholder="kosong = belum diisi"></label><label class="f">Jarak antar toko default (km)<input id="pAT" type="number" min="0" step="0.1" value="'+esc(c.kmAntarDefault)+'" placeholder="kosong = belum diisi"></label></div>'+
+  '<p class="muted small">Tanpa jarak, cek jam kerja dilewati dan rekomendasi hanya memakai kubikasi.</p></section>'+
+  '<section class="card"><h2>Sumber data</h2><label class="f">ID Google Sheet feed armada<input id="pFeed" value="'+esc(c.feedId)+'"></label><p class="muted small">Sheet feed menarik tab ARMADA GT, ARMADA MT, dan KD DEPO &amp; DIST dari Database Armada dengan IMPORTRANGE, tanpa kolom nama driver. <a href="https://docs.google.com/spreadsheets/d/'+esc(c.feedId)+'/edit" target="_blank" rel="noopener">Buka sheet feed</a></p></section>'+
+  '<div class="row"><button class="btn primary" data-act="saveParams">Simpan parameter</button><button class="btn" data-act="resetParams">Kembalikan ke awal</button></div>';
+}
+
+// ---------- Panel hitungan (read-only) ----------
+function viewPanel(){
+  const s=S.subs.find(x=>x.id===S.openId);if(!s)return '';const r=evaluate(s),cmap=(S.cust[s.plant]&&S.cust[s.plant].map)||{};
+  let h='<div class="scrim" data-act="close"></div><aside class="panel" role="dialog" aria-modal="true" aria-label="Hitungan rekomendasi"><div class="panel-head"><div style="flex:1;min-width:0"><h2>'+esc(s.plant)+(r.nama?' · '+esc(r.nama):'')+'</h2><p class="muted small">'+fdate(s.tanggal)+' · upload '+ftime(s.uploadedAt)+' · '+esc(s.fileName||'')+'</p></div><button class="btn small" data-act="close">Tutup</button></div><div class="panel-body">';
+  r.issues.forEach(i=>{h+='<p class="notice">'+esc(i)+'.</p>'});
+  const cls=r.rek==='SEWA'?'sewa':r.rek==='TIDAK'?'ok':'wait';
+  h+='<div class="verdict '+cls+'"><span class="small" style="font-weight:600;text-transform:uppercase;letter-spacing:.06em">Rekomendasi sistem</span><span class="big">'+(r.rek==='SEWA'?'Sewa '+r.unit+' unit':r.rek==='TIDAK'?'Tidak perlu sewa':'Belum bisa dihitung')+'</span>'+(r.alasan&&r.alasan.length?'<span>Dipicu oleh '+esc(r.alasan.join(' dan '))+'.</span>':'')+'</div>';
+  if(r.info)h+='<section class="card"><h3>Cek kubikasi</h3><dl class="kv"><dt>Kubikasi DO</dt><dd>'+fmt(r.D)+' m³</dd><dt>Armada ('+r.info.armada.map(a=>a.unit+'× '+a.tipe).join(', ')+')</dt><dd>'+fmt(r.K)+' m³</dd><dt>Rasio DO ÷ armada</dt><dd>'+pct(r.rasioK)+'</dd><dt>Batas '+r.pulau+' pulau</dt><dd>'+pct(r.amb)+'</dd><dt>Kapasitas efektif (armada × batas)</dt><dd>'+fmt(r.capEff)+' m³</dd><dt>Kelebihan volume</dt><dd>'+fmt(Math.max(0,r.gapK||0))+' m³</dd><dt class="tot">Unit sewa (÷ '+fmt(r.kubSewa,1)+' m³)</dt><dd class="tot">'+(r.unitK==null?'—':r.unitK)+'</dd></dl></section>'+
+    '<section class="card"><h3>Cek jam kerja</h3>'+(r.timeMissing?'<p class="muted small">Jarak depo belum diisi, cek ini dilewati. Isi di tab Database armada atau Parameter.</p>':'<dl class="kv"><dt>Layanan: '+r.types.RS+' retail small · '+r.types.RL+' retail large · '+r.types.GR+' grosir</dt><dd>'+fmt(r.svcMin/60,1)+' jam</dd><dt>Jalan antar toko ('+fmt(r.kmToko,0)+' km ÷ '+S.cfg.kecepatan+' km/jam)</dt><dd>'+fmt(r.jamJalan,1)+' jam</dd><dt>Jam dibutuhkan</dt><dd>'+fmt(r.jamToko,1)+' jam</dd><dt>Jam efektif per unit ('+S.cfg.jamKerja+' − PP '+fmt(r.jamPP,1)+')</dt><dd>'+fmt(r.jamEfektif,1)+' jam</dd><dt>Tersedia ('+r.N+' unit)</dt><dd>'+fmt(r.jamTersedia,1)+' jam</dd><dt class="tot">Unit sewa ('+r.unitButuhT+' butuh − '+r.N+' milik)</dt><dd class="tot">'+r.unitT+'</dd></dl>')+'</section>';
+  h+='<section class="card"><h3>Per route sales</h3><div class="tablewrap"><table><thead><tr><th>Route</th><th class="r">Kubikasi</th><th class="r">Toko</th><th class="r">DO</th></tr></thead><tbody>'+(s.routes||[]).map(x=>'<tr><td>'+esc(x.route)+'</td><td class="r num">'+fmt(x.D,3)+'</td><td class="r num">'+x.nToko+'</td><td class="r num">'+x.nDO+'</td></tr>').join('')+'</tbody></table></div></section>';
+  h+='<section class="card"><h3>Toko terbesar</h3><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Tipe</th><th class="r">Kubikasi</th><th class="r">% depo</th></tr></thead><tbody>'+(s.customers||[]).slice(0,10).map(c=>'<tr><td class="num">'+esc(c.id)+'</td><td>'+TYPES[cmap[c.id]||S.cfg.tipeDefault]+'</td><td class="r num">'+fmt(c.cub,3)+'</td><td class="r num">'+pct(c.cub/s.D)+'</td></tr>').join('')+'</tbody></table></div></section>';
+  return h+'</div></aside>';
+}
+
+// ---------- Render ----------
+function render(){
+  const active=document.activeElement&&document.activeElement.id,selS=document.activeElement&&document.activeElement.selectionStart;
+  $('storeDot').className='dot '+(Store.mode==='db'?'on':Store.mode==='local'?'local':'');
+  $('storeLabel').textContent=Store.mode==='db'?'Data bersama aktif':Store.mode==='local'?'Mode lokal: hanya di browser ini':'Menghubungkan…';
+  $('roleChip').hidden=!S.role;$('logoutBtn').hidden=!S.role;$('roleName').textContent=S.role==='manager'?'Manager':S.role==='area'?'Area':'';
+  const app=$('app');
+  if(!S.role){app.innerHTML=viewLogin();$('panelRoot').innerHTML='';return}
+  if(Store.mode==='connecting'){app.innerHTML='<div class="card"><p class="empty">Memuat data…</p></div>';return}
+  app.innerHTML=S.role==='area'?viewArea():viewManager();
+  $('panelRoot').innerHTML=S.role==='manager'&&S.openId?viewPanel():'';
+  if(active&&$(active)&&active!=='fileIn'){const el=$(active);try{el.focus();if(selS!=null&&el.setSelectionRange&&el.type!=='number')el.setSelectionRange(selS,selS)}catch(e){}}
+}
+
+// ---------- Event ----------
+document.addEventListener('submit',e=>{
+  if(e.target.id!=='loginForm')return;e.preventDefault();
+  const u=$('lgUser').value.trim().toLowerCase(),p=$('lgPass').value,acc=ACCOUNTS.find(a=>a.u===u&&a.p===p);
+  if(!acc){$('lgErr').hidden=false;return}
+  S.role=acc.role;try{sessionStorage.setItem('pma-role',acc.role)}catch(x){}
+  render();afterLogin();
+});
+$('logoutBtn').addEventListener('click',()=>{S.role=null;S.openId=null;S.pending=null;try{sessionStorage.removeItem('pma-role')}catch(x){}render()});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act;
+  if(act==='tab'){S.tab=b.dataset.tab;render()}
+  else if(act==='open'){S.openId=b.dataset.id;render()}
+  else if(act==='close'){S.openId=null;render()}
+  else if(act==='decide'){decide(b.dataset.id,b.dataset.v)}
+  else if(act==='undo'){save(()=>Store.update('submissions',b.dataset.id,{status:'menunggu',keputusan:null}),'Keputusan dibuka kembali')}
+  else if(act==='bulk'){bulkDecide()}
+  else if(act==='sync'){syncSheet()}
+  else if(act==='saveParams'){saveParams()}
+  else if(act==='resetParams'){S.cfg=clone(DEFAULT_CFG);save(()=>Store.set('config','settings',S.cfg),'Parameter dikembalikan')}
+  else if(act==='submitPending'){submitPending(!!b.dataset.force)}
+  else if(act==='cancelPending'){S.pending=null;S.confirmReplace=null;render()}
+  else if(act==='cancelReplace'){S.confirmReplace=null;render()}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.openId){S.openId=null;render()}});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='dbSearch'){S.dbSearch=t.value;render()}});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='fileIn'&&t.files&&t.files[0])readFile(t.files[0]);
+  else if(t.id==='areaPlant'){S.areaPlant=t.value;render()}
+  else if(t.id==='mgrDate'){S.mgrDate=t.value;render()}
+  else if(t.id==='dbRegion'){S.dbRegion=t.value;render()}
+  else if(t.dataset.cid!=null&&S.pending){const g=S.pending.groups[+t.dataset.gi];g.types=g.types||{};g.types[t.dataset.cid]=t.value}
+  else if(t.id&&t.id.indexOf('pdate-')===0&&S.pending){S.pending.groups[+t.dataset.gi].tanggal=t.value;render()}
+  else if(t.dataset.set){const p=t.dataset.set,k=t.dataset.k;const cur=Object.assign({},S.depoSet[p]||{});cur[k]=k==='pulau'?t.value:(t.value===''?'':+t.value);cur.updatedAt=new Date().toISOString();S.depoSet[p]=cur;save(()=>Store.set('depoSet',p,cur),'Pengaturan '+p+' disimpan')}
+});
+document.addEventListener('dragover',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d){e.preventDefault();d.classList.add('hover')}});
+document.addEventListener('dragleave',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d)d.classList.remove('hover')});
+document.addEventListener('drop',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d){e.preventDefault();d.classList.remove('hover');const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)readFile(f)}});
+
+function readFile(f){
+  if(!window.XLSX){S.notice='Pembaca Excel belum termuat. Periksa koneksi lalu muat ulang halaman.';render();return}
+  const fr=new FileReader();
+  fr.onload=()=>{try{S.pending={groups:parseFile(new Uint8Array(fr.result),f.name)};S.notice='';S.confirmReplace=null}catch(err){S.notice=err.message||'File tidak dapat dibaca.'}render()};
+  fr.onerror=()=>{S.notice='File tidak dapat dibaca.';render()};fr.readAsArrayBuffer(f);
+}
+async function submitPending(force){
+  const p=S.pending;if(!p)return;
+  for(const g of p.groups){if(!g.tanggal){S.notice='Isi tanggal kirim untuk '+g.plant+'.';render();return}}
+  if(!force){const dec=p.groups.map(g=>S.subs.find(s=>s.id===subId(g.plant,g.tanggal))).filter(s=>s&&s.status!=='menunggu');if(dec.length){S.confirmReplace=dec.map(s=>s.plant+' '+fdate(s.tanggal)).join(', ');render();return}}
+  const now=new Date().toISOString();
+  try{
+    for(const g of p.groups){
+      const cur=(S.cust[g.plant]&&S.cust[g.plant].map)||{},map=Object.assign({},cur);
+      g.customers.forEach(c=>{map[c.id]=(g.types&&g.types[c.id])||cur[c.id]||S.cfg.tipeDefault});
+      await Store.set('customers',g.plant,{map,updatedAt:now});
+      await Store.set('submissions',subId(g.plant,g.tanggal),{plant:g.plant,tanggal:g.tanggal,fileName:g.fileName,nBaris:g.nBaris,D:g.D,nilai:g.nilai,nDO:g.nDO,customers:g.customers,routes:g.routes,uploadedAt:now,status:'menunggu',keputusan:null});
+    }
+    S.pending=null;S.confirmReplace=null;S.notice='';render();toast('Terkirim ke manager');
+  }catch(e){S.notice='Gagal mengirim'+(e&&e.code?' ('+e.code+')':'')+'. Coba lagi.';render()}
+}
+function decisionDoc(s,v){const r=evaluate(s);return{status:v,keputusan:{unit:v==='sewa'?Math.max(1,r.unit||0):0,at:new Date().toISOString(),ikutRekomendasi:(v==='sewa')===(r.rek==='SEWA'),snapshot:{D:r.D,K:r.K||null,N:r.N||null,rasioK:r.rasioK||null,rasioT:r.rasioT||null,rek:r.rek,unitRek:r.unit||0}}}}
+function decide(id,v){const s=S.subs.find(x=>x.id===id);if(!s)return;save(()=>Store.update('submissions',id,decisionDoc(s,v)),v==='sewa'?'Sewa '+s.plant+' di-approve':s.plant+': tidak sewa')}
+async function bulkDecide(){
+  const list=S.subs.filter(s=>(S.mgrDate==='semua'||s.tanggal===S.mgrDate)&&s.status==='menunggu').map(s=>({s,r:evaluate(s)})).filter(x=>x.r.rek!=='DATA');
+  try{for(const x of list)await Store.update('submissions',x.s.id,decisionDoc(x.s,x.r.rek==='SEWA'?'sewa':'tidak'));toast(list.length+' depo diputuskan sesuai rekomendasi')}catch(e){S.notice='Sebagian keputusan gagal disimpan'+(e&&e.code?' ('+e.code+')':'')+'. Coba lagi.';render()}
+}
+function saveParams(){
+  const v=id=>+$(id).value,raw=id=>$(id).value.trim();
+  const regionLuar=[...document.querySelectorAll('[data-region]')].filter(x=>x.checked).map(x=>x.dataset.region);
+  const c={ambangDalam:v('pDalam'),ambangLuar:v('pLuar'),kubikSewaDefault:v('pSewa'),abaikanMerged:$('pMerged').checked,regionLuar,jamKerja:v('pJam'),kecepatan:v('pSpeed'),layanan:{RS:v('pRS'),RL:v('pRL'),GR:v('pGR')},tipeDefault:$('pDef').value,kmPPDefault:raw('pPP')===''?'':+raw('pPP'),kmAntarDefault:raw('pAT')===''?'':+raw('pAT'),feedId:raw('pFeed')||DEFAULT_CFG.feedId};
+  if(!(c.jamKerja>0&&c.kecepatan>0&&c.ambangDalam>0&&c.ambangLuar>0&&c.kubikSewaDefault>0)){S.notice='Ambang, kubikasi unit sewa, jam kerja, dan kecepatan harus lebih dari 0.';render();return}
+  const feedChanged=c.feedId!==S.cfg.feedId;S.cfg=c;S.notice='';
+  save(()=>Store.set('config','settings',c),'Parameter disimpan').then(()=>{if(feedChanged)syncSheet()});
+}
+
+// ---------- Start ----------
+let synced=false;
+function afterLogin(){if(S.role==='manager'&&!synced&&Store.mode!=='connecting'&&S.mcp!==undefined){synced=true;syncSheet()}}
+try{const r=sessionStorage.getItem('pma-role');if(r==='area'||r==='manager')S.role=r}catch(e){}
+render();
+Store.init().then(()=>{
+  Store.watch('submissions',l=>{S.subs=l;render()});
+  Store.watch('depoSet',l=>{const o={};l.forEach(d=>{o[d.id]=d});S.depoSet=o;render()});
+  Store.watch('customers',l=>{const o={};l.forEach(d=>{o[d.id]=d});S.cust=o;render()});
+  Store.watch('master',l=>{const m=l.find(d=>d.id==='armada');S.master=m||{depos:{}};render()});
+  Store.watch('config',l=>{const s=l.find(d=>d.id==='settings');S.cfg=Object.assign(clone(DEFAULT_CFG),s||{});S.cfg.layanan=Object.assign({},DEFAULT_CFG.layanan,(s&&s.layanan)||{});delete S.cfg.id;render()});
+  render();afterLogin();
+});
+(async()=>{let m=null;try{if(window.claude&&typeof window.claude.use==='function')m=await window.claude.use('mcp')}catch(e){}S.mcp=m;if(!m)S.sync={state:'off'};render();afterLogin()})();
+})();
+</script>
